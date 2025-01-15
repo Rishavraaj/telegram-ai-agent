@@ -19,6 +19,9 @@ export const env = createEnv({
       .default("development"),
     TELEGRAM_BOT_TOKEN: z.string().min(1),
     ASSEMBLYAI_API_KEY: z.string().min(1),
+    OPENAI_API_KEY: z.string().min(1),
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
   },
 
   /**
@@ -44,6 +47,9 @@ export const env = createEnv({
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
