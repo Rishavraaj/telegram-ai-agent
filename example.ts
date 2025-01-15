@@ -227,40 +227,40 @@ import { initializeAgentExecutorWithOptions } from "langchain/agents";
 //   "AwACAgUAAxkBAAMuZ4eWxuMRmVugy1_VdGGZnMpdFC0AAgcVAAJXvjhUCknRSi93UTY2BA",
 // );
 
-import { DynamicStructuredTool, DynamicTool } from "@langchain/core/tools";
-import { z } from "zod";
-import { ChatOpenAI } from "@langchain/openai";
+// import { DynamicStructuredTool, DynamicTool } from "@langchain/core/tools";
+// import { z } from "zod";
+// import { ChatOpenAI } from "@langchain/openai";
 
-const model = new ChatOpenAI({
-  modelName: "gpt-3.5-turbo",
-  temperature: 0,
-});
+// const model = new ChatOpenAI({
+//   modelName: "gpt-3.5-turbo",
+//   temperature: 0,
+// });
 
-const currentDateTool = new DynamicTool({
-  name: "get_current_date",
-  description: "get the current date",
-  func: async () => {
-    return new Date().toISOString();
-  },
-});
+// const currentDateTool = new DynamicTool({
+//   name: "get_current_date",
+//   description: "get the current date",
+//   func: async () => {
+//     return new Date().toISOString();
+//   },
+// });
 
-const createEventTool = new DynamicTool({
-  name: "create_event",
-  description: "create an event",
-  func: async () => {
-    return "Event created";
-  },
-});
+// const createEventTool = new DynamicTool({
+//   name: "create_event",
+//   description: "create an event",
+//   func: async () => {
+//     return "Event created";
+//   },
+// });
 
-const tools = [currentDateTool, createEventTool];
+// const tools = [currentDateTool, createEventTool];
 
-const agent = await initializeAgentExecutorWithOptions(tools, model, {
-  agentType: "openai-functions",
-  verbose: true,
-});
+// const agent = await initializeAgentExecutorWithOptions(tools, model, {
+//   agentType: "openai-functions",
+//   verbose: true,
+// });
 
-const result = await agent.invoke({
-  input: "What is the tomorrow date?",
-});
+// const result = await agent.invoke({
+//   input: "What is the tomorrow date?",
+// });
 
-console.log("result", result);
+// console.log("result", result);

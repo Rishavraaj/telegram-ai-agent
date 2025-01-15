@@ -1,18 +1,26 @@
 import { oauth2Client } from "@/utils/calendar-agent/calendar";
+import { saveTokens } from "@/utils/prisma";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const code = searchParams.get("code");
-
+  const telegramUserId = searchParams.get("state");
   if (!code) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 });
+  }
+
+  if (!telegramUserId) {
+    return NextResponse.json(
+      { error: "No telegramUserId provided" },
+      { status: 400 },
+    );
   }
 
   try {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
-
+    await saveTokens(telegramUserId!, tokens);
     // Create response with redirect
     const response = NextResponse.redirect(new URL("/", req.url));
 
