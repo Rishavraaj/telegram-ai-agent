@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     // }
 
     if (messageType) {
-      const response = await fetch("http://localhost:3001/api/calendar", {
+      const response = await fetch(`${env.NEXT_PUBLIC_APP_URL}/api/calendar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: messageType }),
