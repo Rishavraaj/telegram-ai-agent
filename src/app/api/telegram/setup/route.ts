@@ -8,7 +8,9 @@ export async function GET() {
 
     const webhookUrl = `${env.NEXT_PUBLIC_APP_URL}/api/telegram/webhook`;
 
-    await bot.api.setWebhook(webhookUrl);
+    await bot.api.setWebhook(webhookUrl, {
+      allowed_updates: ["message", "edited_message"],
+    });
 
     const webhookInfo = await bot.api.getWebhookInfo();
 

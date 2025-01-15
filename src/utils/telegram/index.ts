@@ -1,3 +1,5 @@
+import { convertVoiceToText } from "../assembly-ai";
+
 type Message = {
   text: string;
   voice: {
@@ -9,11 +11,12 @@ type Message = {
   };
 };
 
-export const determineMessageType = (message: Message) => {
+export const determineMessageType = async (message: Message) => {
   if (message.text) {
     return "this is a text message";
   }
   if (message.voice) {
-    return "this is a voice message";
+    const text = await convertVoiceToText(message.voice.file_id);
+    return text;
   }
 };
