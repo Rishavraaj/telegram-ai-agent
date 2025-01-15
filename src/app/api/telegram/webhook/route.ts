@@ -9,37 +9,53 @@ export async function POST(req: Request) {
   try {
     const payload = await req.json();
 
-    // console.log("payload", payload);
+    const loadingMessage = await bot.api.sendMessage(
+      payload.message.chat.id,
+      "🔄 🤖 ⚡️ Agent is processing your request... 🎯 🚀",
+    );
+
     const messageType = await determineMessageType(payload.message);
 
-    console.log("messageType", messageType);
-
-    // if (messageType) {
-    //   await bot.api.sendMessage(payload.message.chat.id, messageType);
-    // }
-
     if (messageType) {
-      const response = await fetch(`${env.NEXT_PUBLIC_APP_URL}/api/calendar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: messageType }),
-      });
+      const response = await fetch(
+        `${env.NEXT_PUBLIC_APP_URL}/api/calendar?telegramUserId=${payload.message.chat.id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: messageType }),
+        },
+      );
 
       const data = await response.json();
 
-      console.log("data", data);
+      // Delete loading message
+      await bot.api.deleteMessage(
+        payload.message.chat.id,
+        loadingMessage.message_id,
+      );
 
       if (data.error) {
-        await bot.api.sendMessage(payload.message.chat.id, data.error);
+        const connectUrl = `${env.NEXT_PUBLIC_APP_URL}/api/auth/google?telegramUserId=${payload.message.chat.id}`;
+        await bot.api.sendMessage(
+          payload.message.chat.id,
+          `${data.error}\n\nPlease connect your Google Calendar:`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Connect Google Calendar",
+                    url: connectUrl,
+                  },
+                ],
+              ],
+            },
+          },
+        );
       } else {
-        const result =
-          typeof data.response === "string"
-            ? data.response
-            : JSON.stringify(data.response, null, 2);
-
-        console.log("result", result);
-
-        await bot.api.sendMessage(payload.message.chat.id, result);
+        await bot.api.sendMessage(payload.message.chat.id, data.result, {
+          parse_mode: "Markdown",
+        });
       }
     }
     return NextResponse.json({ ok: true });

@@ -1,15 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { calendarAgent } from "@/utils/calendar-agent";
 import { oauth2Client } from "@/utils/calendar-agent/calendar";
+import { getTokens } from "@/utils/prisma";
 
 export async function POST(req: NextRequest) {
   try {
     // Get tokens from cookies
-    const access_token = req.cookies.get("google_access_token")?.value;
-    const refresh_token = req.cookies.get("google_refresh_token")?.value;
+    const telegramUserId = req.nextUrl.searchParams.get("telegramUserId");
+
+    if (!telegramUserId) {
+      return NextResponse.json(
+        { error: "No telegramUserId provided" },
+        { status: 400 },
+      );
+    }
+
+    const tokens = await getTokens(telegramUserId);
 
     // Check if we have valid credentials
-    if (!access_token) {
+    if (!tokens) {
       return NextResponse.json(
         { error: "Not authenticated", authUrl: "/api/auth/google" },
         { status: 401 },
@@ -18,8 +27,8 @@ export async function POST(req: NextRequest) {
 
     // Set credentials from cookies
     oauth2Client.setCredentials({
-      access_token,
-      refresh_token,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
       token_type: "Bearer",
     });
 
@@ -34,10 +43,8 @@ export async function POST(req: NextRequest) {
 
     const agent = await calendarAgent();
     const result = await agent.invoke({ input: prompt });
-
     return NextResponse.json({ result: result.output });
   } catch (error: Error | unknown) {
-    console.error("Calendar agent error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Internal server error";
 
