@@ -13,7 +13,7 @@ type Message = {
 
 export const determineMessageType = async (message: Message) => {
   if (message.text) {
-    return "this is a text message";
+    return message.text;
   }
   if (message.voice) {
     const text = await convertVoiceToText(message.voice.file_id);

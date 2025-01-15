@@ -16,7 +16,7 @@ const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const REDIRECT_URI =
   process.env.NODE_ENV === "production"
     ? `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`
-    : "http://localhost:3000/api/auth/callback";
+    : "http://localhost:3001/api/auth/callback";
 
 export const oauth2Client = new OAuth2Client(
   env.GOOGLE_CLIENT_ID,
