@@ -1,16 +1,7 @@
-import Link from "next/link";
 import { ConnectCalendarButton } from "./_components/ConnectCalendarButton";
-import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
+import { HydrateClient } from "@/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await auth();
-
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
-
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-24">
