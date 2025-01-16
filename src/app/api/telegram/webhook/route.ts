@@ -35,23 +35,29 @@ export async function POST(req: Request) {
       );
 
       if (data.error) {
-        const connectUrl = `${env.NEXT_PUBLIC_APP_URL}/api/auth/google?telegramUserId=${payload.message.chat.id}`;
-        await bot.api.sendMessage(
-          payload.message.chat.id,
-          `${data.error}\n\nPlease connect your Google Calendar:`,
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "Connect Google Calendar",
-                    url: connectUrl,
-                  },
+        if (data.error === "Not authenticated") {
+          const connectUrl = `${env.NEXT_PUBLIC_APP_URL}/api/auth/google?telegramUserId=${payload.message.chat.id}`;
+          await bot.api.sendMessage(
+            payload.message.chat.id,
+            `${data.error}\n\nPlease connect your Google Calendar:`,
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "Connect Google Calendar",
+                      url: connectUrl,
+                    },
+                  ],
                 ],
-              ],
+              },
             },
-          },
-        );
+          );
+        } else {
+          await bot.api.sendMessage(payload.message.chat.id, data.error, {
+            parse_mode: "Markdown",
+          });
+        }
       } else {
         await bot.api.sendMessage(payload.message.chat.id, data.result, {
           parse_mode: "Markdown",
