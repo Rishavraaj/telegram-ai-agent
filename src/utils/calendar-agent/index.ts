@@ -71,11 +71,11 @@ export const calendarAgent = async () => {
         "addMeetLink": true/false            // Optional, whether to add a Google Meet link
       }
       For dates:
-      - Use dayjs().add(1, 'day') for tomorrow
-      - Use dayjs() for today
-      - Always include the actual year, month, and day in the date
-      - Do not use placeholder dates
-      - Before scheduling any meeting for today, first call get_current_date to get the current date`,
+      - IMPORTANT: Always call get_current_date first before scheduling any event
+      - Use the returned current date to validate and calculate dates
+      - For future dates, add days to the current date (e.g., dayjs(currentDate).add(7, 'days'))
+      - Never schedule events without first checking the current date
+      - Ensure all dates are based on the actual current date`,
     func: async (input: string) => {
       try {
         if (!input) {
@@ -104,13 +104,17 @@ export const calendarAgent = async () => {
         const startDate = dayjs(startTime).tz(systemTimezone);
         const endDate = dayjs(endTime).tz(systemTimezone);
 
+        // If there are attendees, automatically add meet link
+        const shouldAddMeetLink =
+          attendees && attendees.length > 0 ? true : addMeetLink;
+
         const event = await createEvent(
           summary,
           description || "",
           startDate.toDate(),
           endDate.toDate(),
           attendees,
-          addMeetLink,
+          shouldAddMeetLink,
         );
 
         return JSON.stringify(event, null, 2);
@@ -135,7 +139,7 @@ export const calendarAgent = async () => {
         "attendees": ["email@example.com"]    // Optional
         "addMeetLink": true/false            // Optional, whether to add a Google Meet link
       }
-      Always use actual dates, not placeholders.`,
+      Always call get_current_date first before updating any event dates.`,
     func: async (input: string) => {
       try {
         const { eventId, ...updates } = JSON.parse(input);
@@ -147,6 +151,11 @@ export const calendarAgent = async () => {
         }
         if (updates.endTime) {
           updates.endTime = dayjs(updates.endTime).tz(systemTimezone).toDate();
+        }
+
+        // If there are attendees, automatically add meet link
+        if (updates.attendees && updates.attendees.length > 0) {
+          updates.addMeetLink = true;
         }
 
         const event = await updateEvent(eventId, updates);
@@ -193,15 +202,16 @@ export const calendarAgent = async () => {
     [
       "system",
       `You are a helpful assistant that manages Google Calendar events. When creating or updating events:
-      1. For tomorrow's events, use dayjs().add(1, 'day') to get the correct date
-      2. For today's events, first call get_current_date to get today's date
-      3. Always use the actual date and year, not placeholders
-      4. Convert user's natural language time to proper format (YYYY-MM-DDTHH:mm:ss)
-      5. Format the input as proper JSON before calling tools
-      6. Include all necessary fields as specified in the tool descriptions
-      7. Handle time zones appropriately using the user's local timezone
-      8. For time durations, calculate the end time based on the start time and duration
-      9. Double-check that dates are correct before creating events`,
+      1. ALWAYS call get_current_date first before any scheduling operation
+      2. Use the returned current date as the base for calculating any dates
+      3. For future dates, add days to the current date (e.g., for next week: dayjs(currentDate).add(7, 'days'))
+      4. Never use hardcoded dates or assume the current date
+      5. Convert user's natural language time to proper format (YYYY-MM-DDTHH:mm:ss)
+      6. Format the input as proper JSON before calling tools
+      7. Include all necessary fields as specified in the tool descriptions
+      8. Handle time zones appropriately using the user's local timezone
+      9. For time durations, calculate the end time based on the start time and duration
+      10. Double-check that dates are correct and based on the current date before creating events`,
     ],
     ["human", "{input}"],
     new MessagesPlaceholder("agent_scratchpad"),
