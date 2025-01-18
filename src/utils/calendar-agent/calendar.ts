@@ -10,8 +10,8 @@ import { type calendar_v3 } from "googleapis";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// Get system timezone
-const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// Set timezone to Asia/Kolkata
+const systemTimezone = "Asia/Kolkata";
 
 const REDIRECT_URI =
   process.env.NODE_ENV === "production"
@@ -56,20 +56,13 @@ export async function createEvent(
   endTime: Date,
   attendees?: string[],
   addMeetLink: boolean = false,
-  userTimezone?: string,
 ) {
-  // Use the provided timezone, fallback to system timezone, then to IST
-  const timezone =
-    userTimezone ||
-    Intl.DateTimeFormat().resolvedOptions().timeZone ||
-    "Asia/Kolkata";
-
-  // Convert dates to user's timezone while preserving the intended time
-  const start = dayjs(startTime).tz(timezone);
-  const end = dayjs(endTime).tz(timezone);
+  // Explicitly parse the dates in the system timezone and format with offset
+  const start = dayjs(startTime).tz(systemTimezone, true);
+  const end = dayjs(endTime).tz(systemTimezone, true);
 
   console.log("Debug timezone info:", {
-    detectedTimezone: timezone,
+    systemTimezone,
     originalStart: startTime,
     originalEnd: endTime,
     parsedStart: start.format(),
@@ -87,11 +80,11 @@ export async function createEvent(
       description,
       start: {
         dateTime: start.format(),
-        timeZone: timezone,
+        timeZone: systemTimezone,
       },
       end: {
         dateTime: end.format(),
-        timeZone: timezone,
+        timeZone: systemTimezone,
       },
       attendees: attendees?.map((email) => ({ email })),
       conferenceData: addMeetLink

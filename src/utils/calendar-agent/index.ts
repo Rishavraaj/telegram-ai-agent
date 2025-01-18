@@ -11,8 +11,8 @@ import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// Get system timezone
-const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// Set timezone to Asia/Kolkata
+const systemTimezone = "Asia/Kolkata";
 
 export const calendarAgent = async () => {
   const getCurrentDateTool = new DynamicTool({
@@ -75,8 +75,7 @@ export const calendarAgent = async () => {
       - Use the returned current date to validate and calculate dates
       - For future dates, add days to the current date (e.g., dayjs(currentDate).add(7, 'days'))
       - Never schedule events without first checking the current date
-      - Ensure all dates are based on the actual current date
-      - The timezone will be automatically detected from the user's system`,
+      - Ensure all dates are based on the actual current date`,
     func: async (input: string) => {
       try {
         if (!input) {
@@ -101,12 +100,9 @@ export const calendarAgent = async () => {
           );
         }
 
-        // Get the user's timezone
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
         // Parse dates with the correct timezone
-        const startDate = dayjs(startTime).tz(userTimezone);
-        const endDate = dayjs(endTime).tz(userTimezone);
+        const startDate = dayjs(startTime).tz(systemTimezone);
+        const endDate = dayjs(endTime).tz(systemTimezone);
 
         // If there are attendees, automatically add meet link
         const shouldAddMeetLink =
@@ -119,7 +115,6 @@ export const calendarAgent = async () => {
           endDate.toDate(),
           attendees,
           shouldAddMeetLink,
-          userTimezone, // Pass the detected timezone
         );
 
         return JSON.stringify(event, null, 2);
