@@ -56,13 +56,20 @@ export async function createEvent(
   endTime: Date,
   attendees?: string[],
   addMeetLink: boolean = false,
+  userTimezone?: string,
 ) {
-  // Explicitly parse the dates in the system timezone and format with offset
-  const start = dayjs(startTime).tz(systemTimezone, true);
-  const end = dayjs(endTime).tz(systemTimezone, true);
+  // Use the provided timezone, fallback to system timezone, then to IST
+  const timezone =
+    userTimezone ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone ||
+    "Asia/Kolkata";
+
+  // Convert dates to user's timezone while preserving the intended time
+  const start = dayjs(startTime).tz(timezone);
+  const end = dayjs(endTime).tz(timezone);
 
   console.log("Debug timezone info:", {
-    systemTimezone,
+    detectedTimezone: timezone,
     originalStart: startTime,
     originalEnd: endTime,
     parsedStart: start.format(),
@@ -80,11 +87,11 @@ export async function createEvent(
       description,
       start: {
         dateTime: start.format(),
-        timeZone: systemTimezone,
+        timeZone: timezone,
       },
       end: {
         dateTime: end.format(),
-        timeZone: systemTimezone,
+        timeZone: timezone,
       },
       attendees: attendees?.map((email) => ({ email })),
       conferenceData: addMeetLink
