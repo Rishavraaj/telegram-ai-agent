@@ -1,4 +1,3 @@
-import { initializeAgentExecutorWithOptions } from "langchain/agents";
 // import { Bot, InlineKeyboard } from "grammy";
 
 // //Store bot screaming status
@@ -264,3 +263,145 @@ import { initializeAgentExecutorWithOptions } from "langchain/agents";
 // });
 
 // console.log("result", result);
+
+// import { ChatOpenAI } from "@langchain/openai";
+// import { tool } from "@langchain/core/tools";
+// import { z } from "zod";
+// import { ChatPromptTemplate } from "@langchain/core/prompts";
+// import { createToolCallingAgent } from "langchain/agents";
+// import { AgentExecutor } from "langchain/agents";
+// import { createReactAgent } from "@langchain/langgraph/prebuilt";
+
+// const prompt = ChatPromptTemplate.fromMessages([
+//   ["system", "You are a helpful assistant"],
+//   ["placeholder", "{chat_history}"],
+//   ["human", "{input}"],
+//   ["placeholder", "{agent_scratchpad}"],
+// ]);
+
+// const llm = new ChatOpenAI({
+//   model: "gpt-3.5-turbo",
+//   temperature: 0,
+// });
+
+// /**
+//  * Note that the descriptions here are crucial, as they will be passed along
+//  * to the model along with the class name.
+//  */
+// const calculatorSchema = z.object({
+//   operation: z
+//     .enum(["add", "subtract", "multiply", "divide"])
+//     .describe("The type of operation to execute."),
+//   number1: z.number().describe("The first number to operate on."),
+//   number2: z.number().describe("The second number to operate on."),
+// });
+
+// const calculatorTool = tool(
+//   async ({ operation, number1, number2 }) => {
+//     // Functions must return strings
+//     if (operation === "add") {
+//       return `${number1 + number2}`;
+//     } else if (operation === "subtract") {
+//       return `${number1 - number2}`;
+//     } else if (operation === "multiply") {
+//       return `${number1 * number2}`;
+//     } else if (operation === "divide") {
+//       return `${number1 / number2}`;
+//     } else {
+//       throw new Error("Invalid operation.");
+//     }
+//   },
+//   {
+//     name: "calculator",
+//     description: "Can perform mathematical operations.",
+//     schema: calculatorSchema,
+//   },
+// );
+
+// // const agent = createToolCallingAgent({
+// //   llm,
+// //   tools: [calculatorTool],
+// //   prompt,
+// // });
+
+// // const agentExecutor = new AgentExecutor({
+// //   agent,
+// //   tools: [calculatorTool],
+// // });
+
+// const app = createReactAgent({
+//   llm,
+//   tools: [calculatorTool],
+// });
+
+// let agentOutput = await app.invoke({
+//   messages: [
+//     {
+//       role: "user",
+//       content: "What is 3 * 12? Also, what is 11 + 49?",
+//     },
+//   ],
+// });
+
+// const messageHistory = agentOutput.messages;
+// const newQuery = "What is 11 * 12?";
+
+// agentOutput = await app.invoke({
+//   messages: [...messageHistory, { role: "user", content: newQuery }],
+// });
+
+// console.log("Response:", agentOutput);
+
+import {
+  GmailCreateDraft,
+  GmailGetMessage,
+  GmailGetThread,
+  GmailSearch,
+  GmailSendMessage,
+} from "@langchain/community/tools/gmail";
+import { type StructuredTool } from "@langchain/core/tools";
+import { OpenAI } from "@langchain/openai";
+import { initializeAgentExecutorWithOptions } from "langchain/agents";
+
+export async function run() {
+  const model = new OpenAI({
+    temperature: 0,
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  //   These are the default parameters for the Gmail tools
+  const gmailParams = {
+    credentials: {
+      clientEmail: "ayusharyanrocky@gmail.com",
+      privateKey:
+        "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC8lPi8PHOsXTpD\n+yPqujneBAnUtozY81Oi6g7xZ9B79R0LQtNOSAaG5lSN5R3XTNNQ+PupOpwEBMzU\nw+z0qE826pHwmTMoLKt5T2koircu7CCSjxH0fXvmWKvIWDAib0SYM3ZnhpUtB8S7\n/KXAG01bKoQ1d2h0yfBFTrNgLNniCzzIhHvjxPiBC8FagwvQLh73WMtSOO87pFxx\nle8el552rk2Zc+ZFBoxuf+PZ6rDqsxHodRaLVv3koKo2ovIkzUE0U6xnv3npDeAv\nigSn8EbYpBCZJ3VfNiTiMUpIw5MpgoMm+1QEJAlGE+xo7OLorNHqKUOIk56O72qi\ny0Z+U6q9AgMBAAECggEAXEFQsd2tBQySnYE13/X8qzU0jgBERTo8lz2D0+tindGa\nxNCLSQeJUeNKSCRnBdXKpxk3HGHUw06J2iiDOmlAX3A/twFremLn/C+yFShPV0Ai\n6y/cq8vbmiOU3izuV1oxp3e9nAXF4sKjJwgBGksA+/F/vhxNWJ0V0wIeVJV8fc0C\n1kSoEXd/tzvjohSoyCTWSoZU+iqwxiLh/pmufmyjANP7LdNCCorE5ylDSx73W2Yv\nofbmMDCsU1EiBTEapYy0AfJM644ABZFEIljq2ceopaz7N/Hjbwn/++FhozYh3U+J\nLnoLMgzeulxHJLviejBBTHjSTkcVT0bExoeVDibxLQKBgQD5gcmJLXqXzLSDkAJU\n7pmmp3jzfl4LirnHjw69OlSCUHzrC5JDJnQ68eU8/6pBppKxu9/H4kc8petpD638\nqLxl8DmdoMHvwvlqANi4X26N2/2OcUQzBLUItWr3DbqQHNfpynHhiGfRpqQCwOOa\nC1rDknTMFAZYT+HImVERdaDlBwKBgQDBfU1i4Zp6xuJ1AYofHbVZCm0AgYroBzfz\n+s/5s7CP2E0wG6G2TOquq276uLrB9B1ZZNTtw68UOxhiAcdb8KovC40WZ2e9lxQG\nXdu2J+SQEfsRbWLqtId9XdijWFtuITtkIHk9n5QQR6sdpzavNHHQykUEUGCw0Pdr\nPC+TpdKlGwKBgQCWNLo9aTGqfUQXB/U/aDz8BUpdXDAFxsg9CTSYWqtRoF7zqY2t\n+1Jxwfp9lHTM/RjHAxGfZev46PIl15ioyHRS8iHdcVAPpVM9q7DMnjcSE+Q7gpjK\nFgVebsksXgl4hMS/LG8OlW3a2vVV6wWaUUedAWhrC4seU0jb2ODjH+tytQKBgA8j\nBVXR/mrSek7bAvoyMci4dxSODdbfEbKFkZWgSBTIwCkeUEVZuRZXFQSKRRn9RfqD\nV+EN6Pl1MhAgwX7g0f+CMNRq3IPJeOiSmSij8E6RCYowe4eO/faBy/vjYqu379SC\ncdmvTT8EzE8ykKWePbUuzb1rqFTM1D5QZAxx8Yu3AoGBAMHA4BtWi334Mj2CuLzw\nzSmy6YdZJqfxisLPrPPN0Myt1TPq5K7p1psq1VhhqY5eRRnTnE/zP4H+BvtZwSGd\nm7lmB7IjAWg5ok0j7HUI4UC5VRU/teI2FcOmNXiY8uMQC/4DyxrDIf8ldW+Srgab\nje320l9i32mmmtMJo0avjq/s\n-----END PRIVATE KEY-----\n",
+    },
+    scopes: ["https://mail.google.com/"],
+  };
+
+  const tools: StructuredTool[] = [
+    new GmailCreateDraft(gmailParams),
+    new GmailGetMessage(gmailParams),
+    new GmailGetThread(gmailParams),
+    new GmailSearch(gmailParams),
+    new GmailSendMessage(gmailParams),
+  ];
+
+  const gmailAgent = await initializeAgentExecutorWithOptions(tools, model, {
+    agentType: "structured-chat-zero-shot-react-description",
+    verbose: true,
+  });
+
+  //   const createInput = `Create a gmail draft for me to edit of a letter from the perspective of a sentient parrot who is looking to collaborate on some research with her estranged friend, a cat. Under no circumstances may you send the message, however.`;
+
+  //   const createResult = await gmailAgent.invoke({ input: createInput });
+
+  //   console.log("Create Result", createResult);
+
+  const viewInput = `Could you search in my drafts for the latest email?`;
+
+  const viewResult = await gmailAgent.invoke({ input: viewInput });
+
+  console.log("View Result", viewResult);
+}
+
+run();
