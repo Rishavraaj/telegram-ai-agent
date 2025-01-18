@@ -57,9 +57,17 @@ export async function createEvent(
   attendees?: string[],
   addMeetLink: boolean = false,
 ) {
-  // Convert the input dates to the system timezone while preserving the time
-  const start = dayjs(startTime).format("YYYY-MM-DDTHH:mm:ss");
-  const end = dayjs(endTime).format("YYYY-MM-DDTHH:mm:ss");
+  // Explicitly parse the dates in the system timezone and format with offset
+  const start = dayjs(startTime).tz(systemTimezone, true);
+  const end = dayjs(endTime).tz(systemTimezone, true);
+
+  console.log("Debug timezone info:", {
+    systemTimezone,
+    originalStart: startTime,
+    originalEnd: endTime,
+    parsedStart: start.format(),
+    parsedEnd: end.format(),
+  });
 
   try {
     // Verify OAuth client has credentials
@@ -71,11 +79,11 @@ export async function createEvent(
       summary,
       description,
       start: {
-        dateTime: start,
+        dateTime: start.format(),
         timeZone: systemTimezone,
       },
       end: {
-        dateTime: end,
+        dateTime: end.format(),
         timeZone: systemTimezone,
       },
       attendees: attendees?.map((email) => ({ email })),
